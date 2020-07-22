@@ -1,0 +1,11 @@
+{
+       "jobs": [
+        
+        {
+            "name": "proxy-basic",
+            "exec": "/bin/sh /config/run_squid.sh",
+            "port": 3128,
+            "restarts": "unlimited"
+        }
+    ]
+}

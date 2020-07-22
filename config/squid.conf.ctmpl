@@ -1,0 +1,22 @@
+#auth_param basic program /usr/lib/squid/basic_ncsa_auth /etc/squid/passwords
+pid_filename none
+log_mime_hdrs on
+access_log stdio:/dev/stdout
+auth_param basic realm proxy
+#acl authenticated proxy_auth REQUIRED
+http_access allow all
+http_port 3128 ssl-bump generate-host-certificates=on dynamic_cert_mem_cache_size=4MB cert=/config/squidca.pem key=/config/squidca.key.pem 
+sslcrtd_program /usr/lib/squid/security_file_certgen -s /var/cache/squid/ssl_db -M 4MB
+sslcrtd_children 32 startup=5 idle=1
+ssl_bump bump all
+sslproxy_cert_error allow all
+http_upgrade_request_protocols OTHER allow all
+
+cache_peer {{ env "UPSTREAM_HOST" }}  parent {{ env "UPSTREAM_PORT" }} 0 name=upstream-proxy no-digest no-netdb-exchange no-query login=PASSTHRU 
+cache_peer_access upstream-proxy allow all
+request_header_add Shield-TenantID "{{ env "TENANT_ID" }}" all
+request_header_add X-Authenticated-User "{{ env "X_AUTH_USER" }}" all
+request_header_add X-Authenticated-Groups "{{ env "AUTH_GROUPS" }}" all
+request_header_add Shield-Profiles "{{ env "PROFILES" }}" all
+forwarded_for on
+never_direct allow all
